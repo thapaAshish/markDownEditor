@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Markdown Editor</title>
+    <style>
+        body {
+
+            background: linear-gradient(49deg, red 30%, #fff 80%, #fff 83%, blue);
+        }
+
+        .container {
+            bottom: -450px;
+            position: relative;
+            width: 80%;
+            padding: 40px 40px;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            border: black 10px solid;
+
+        }
+
+        .editor {
+            display: inline-block;
+            width: 48%;
+            height: 800px;
+            background: yellow;
+        }
+
+        .viewer {
+            width: 48%;
+            float: right;
+            height: 800px;
+            background: yellow;
+        }
+
+        .title {
+            width: 100%;
+            text-align: center;
+            background-color: cadetblue;
+            padding: 30px 0;
+            font-size: 25px;
+            font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+        }
+
+        .textArea {
+            width: 99%;
+            height: 90%;
+            font-size: 40px;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- This page will have two panels. One to write markdown and another to view markdown -->
+    <div class="container">
+        <div class="editor">
+            <div class="title">
+                Editor
+            </div>
+            <textarea class="textArea" id="content"></textarea>
+        </div>
+        <div class="viewer">
+            <div class="title">
+                Viewer
+            </div>
+            <div class="renderedPage"></div>
+        </div>
+        <script>
+
+            //supports title only
+            
+            var cursorPosition=0;
+            function hElement(size, content) {
+                let newElem = document.createElement(size);
+                let contentToadd = document.createTextNode(content);
+                newElem.appendChild(contentToadd);
+                renderPage.appendChild(newElem);
+            }
+           
+            var renderPage = document.querySelector('.renderedPage');
+            var textElement = document.querySelector('#content');
+            
+            
+            textElement.addEventListener('keyup', function (e) {
+                if (e.key == 'Enter') {
+                
+                    const regexArr = [
+                        '^#{1}\\s(.+)\\n$',
+                        '^#{2}\\s(.+)\\n$',
+                        '^#{3}\\s(.+)\\n$',
+                        '^#{4}\\s(.+)\\n$',
+                        '^#{5}\\s(.+)\\n$',
+                        '^\[(.+)]\((.+)\)$|^(.+)\[(.+)]\((.+)\)$|^\[(.+)]\((.+)\)(.+)$|^(.+)\[(.+)]\((.+)\)(.+)$',
+                    ];
+                    let str = textElement.value;
+                    let strLength = str.length;
+                     //when user clears the textArea strlength is set to 0
+                    // so reset our cursor position
+                    if(strLength < cursorPosition){
+                        cursorPosition = 0;
+                    }
+                    let subStr = str.substring(cursorPosition,strLength);
+                    console.log("cursor position is " + cursorPosition)
+                    console.log(strLength,subStr);
+                    cursorPosition+=subStr.length;
+
+                   
+                    let match = "";
+                    var matchFound = false;
+
+                     for(var i=0; i<regexArr.length;i++){
+                        regex = regexArr[i];
+                        reg = new RegExp(regex, 'gm');
+                        
+                        match = reg.exec(subStr);
+                        
+                        if (match != null) {
+                            //get the position of regex match
+                            let position = regexArr.indexOf(regex);
+                            
+                            switch (position) {
+                                case 0:
+                                    hElement("h1", match[1]);
+                                    break;
+                                case 1:
+                                    hElement("h2", match[1]);
+                                    break;
+                                case 2:
+                                    hElement("h3", match[1]);
+                                    break;
+                                case 3:
+                                    hElement("h4", match[1]);
+                                    break;
+                                case 4:
+                                    hElement("h5", match[1]);
+                                    break;
+                            }
+                            matchFound = true;
+                            break;  
+                        }
+                       
+                    }
+                    //if regex does not match then it is paragraph element
+                    if(subStr.length > 1 && matchFound === false){
+                        hElement("p",subStr);
+                    }else if(matchFound === true){
+                        matchFound = false;
+                    }
+                }
+            });
+        </script>
+</body>
+
+</html>
